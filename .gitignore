@@ -7,7 +7,7 @@ wheels/
 *.egg-info
 
 # Virtual environments
-.venv
+.venv/
 
 # Logs
 logs
@@ -18,11 +18,13 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-gui
-dist
-dist-ssr
-*.local
+node_modules/
+gui/
+dist/
+dist-ssr/
+*.local/
+*.build/
+*.dist/
 
 # Editor directories and files
 .vscode/*

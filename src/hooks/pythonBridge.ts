@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 interface PywebviewEvent<T> {
   detail: { key: string; value: T };
@@ -28,13 +28,58 @@ export function usePythonState<T>(propName: string) {
   return propValue;
 }
 
-export async function usePythonApi<T>(
+export async function usePythonApiSimple<T>(
   apiName: string,
   ...rest: any[]
 ): Promise<T> {
-  // window.pywebview.api = window.pywebview.api || {};
-  // TODO: check if api attribute is defined if no window.expose or js_api is set
-  // TODO: can change this to hold state similar to useSWR
-  const res = await window.pywebview.api[apiName]<T>(...rest);
-  return res;
+  if (!window.pywebview.api.hasOwnProperty(apiName)) {
+    throw new ReferenceError(`pywebview has no attribute ${apiName}`);
+  }
+  return window.pywebview.api[apiName]<T>(...rest);
+}
+
+interface HookOptions {
+  // TODO
+  refreshInterval: number;
+}
+
+export function usePythonApi<T>(
+  apiName: string,
+  apiArgs: any[],
+  options?: HookOptions
+) {
+  const [data, setData] = useState<T | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (apiName === undefined) {
+      return;
+    }
+    setIsLoading(true);
+    if (!window.pywebview.api.hasOwnProperty(apiName)) {
+      setError(new ReferenceError(`${apiName} is not available`));
+    } else {
+      const res = await window.pywebview.api[apiName]<T>(...apiArgs);
+      setData(res);
+    }
+
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    // TODO: consider whether it's appropriate to add isLoading here
+    if (window.pywebview) {
+      fetchData();
+    } else {
+      window.addEventListener("pywebviewready", fetchData);
+    }
+  }, []);
+
+  const mutate = useCallback(async () => {
+    // similar to bound mutate in useSWR... eventually, hopefully
+    return await fetchData();
+  }, [fetchData]);
+
+  return { data, error, isLoading, mutate };
 }

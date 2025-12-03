@@ -1,7 +1,3 @@
-interface PywebviewEvent<T> {
-  detail: { key: string; value: T };
-}
-
 declare global {
   interface Window {
     pywebview: {

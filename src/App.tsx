@@ -1,13 +1,18 @@
 import { useState } from "react";
 import "./App.css";
 
-import { usePythonApi } from "@/hooks/pythonBridge";
+import { usePythonApi, usePythonApiSimple } from "@/hooks/pythonBridge";
 
 function App() {
   const [reply, setReply] = useState<string>("");
+  const { data, isLoading, mutate } = usePythonApi<string>("hello", ["react"]);
   async function triggerPython() {
-    const pythonReply = await usePythonApi<string>("hello", "react");
+    const pythonReply = await usePythonApiSimple<string>(
+      "hello",
+      "react again"
+    );
     setReply(pythonReply);
+    mutate();
   }
 
   return (
@@ -16,6 +21,7 @@ function App() {
       <div className="card">
         <button onClick={triggerPython}>Talk to Python</button>
         <p>{reply}</p>
+        <p>{isLoading ? <p>loading...</p> : data}</p>
       </div>
     </>
   );

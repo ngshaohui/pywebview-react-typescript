@@ -45,3 +45,5 @@ uv run nuitka --standalone src/index.py
 ```
 
 Not yet able to use `--onefile` flag as it will raise an exception `Exception: No index.html found`
+
+This is likely due to how `index.py` function `get_entrypoint` resolves the html file.

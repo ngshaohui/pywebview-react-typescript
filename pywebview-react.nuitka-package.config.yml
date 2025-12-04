@@ -1,0 +1,7 @@
+- module-name: "pywebview-react-nuitka"
+  data-files:
+    dest_path: "dist"
+    dirs:
+      - "gui" # TODO check if this is even how to include the gui dir
+
+    when: "win32"

@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "start": "npm run build-fe:dev && uv run python -m src.index",
-    "build-fe:dev": "vite build --outDir gui --emptyOutDir",
-    "build-fe:prod": "vite build --outDir gui --emptyOutDir --minify",
-    "build-fe:preview": "vite preview --outDir gui --emptyOutDir"
+    "init": "npm install && npm run init:py",
+    "init:py": "uv sync",
+    "frontend:dev": "tsc -b && vite build --outDir gui --emptyOutDir",
+    "frontend:prod": "tsc -b && vite build --outDir gui --emptyOutDir --minify",
+    "frontend:preview": "vite preview --outDir gui --emptyOutDir",
+    "start": "npm run frontend:dev && npm run start:py",
+    "start:py": "uv run python -m src.index"
   },
   "dependencies": {
     "react": "^19.2.0",

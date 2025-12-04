@@ -2,7 +2,7 @@ import os
 import threading
 import webview
 
-from time import time
+from time import sleep, time
 
 
 class Api:
@@ -10,6 +10,7 @@ class Api:
         webview.windows[0].toggle_fullscreen()
 
     def hello(self, name):
+        sleep(1)
         print("Hello from react")
         return f"Hello {name} from python"
 

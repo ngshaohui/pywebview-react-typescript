@@ -1,18 +1,20 @@
-import { useState } from "react";
 import "./App.css";
 
-import { usePythonApi, usePythonApiSimple } from "@/hooks/pythonBridge";
+import { usePythonApi } from "@/hooks/pythonBridge";
 
 function App() {
-  const [reply, setReply] = useState<string>("");
-  const { data, isLoading, mutate } = usePythonApi<string>("hello", ["react"]);
+  const { data, isLoading, error, mutate } = usePythonApi<string>("hello", [
+    "react",
+  ]);
+  const {
+    data: bData,
+    isLoading: bIsLoading,
+    error: bError,
+    mutate: bMutate,
+  } = usePythonApi<string>("non-existent", []);
   async function triggerPython() {
-    const pythonReply = await usePythonApiSimple<string>(
-      "hello",
-      "react again"
-    );
-    setReply(pythonReply);
     mutate();
+    bMutate();
   }
 
   return (
@@ -20,8 +22,14 @@ function App() {
       <h1>Vite + React + Pywebview</h1>
       <div className="card">
         <button onClick={triggerPython}>Talk to Python</button>
-        <p>{reply}</p>
         <p>{isLoading ? <p>loading...</p> : data}</p>
+        {error ? (
+          <p>Error while loading hello api {`${error.message}`}</p>
+        ) : null}
+        <p>{bIsLoading ? <p>loading...</p> : bData}</p>
+        {bError ? (
+          <p>Error while loading non-existent api {`${bError.message}`}</p>
+        ) : null}
       </div>
     </>
   );

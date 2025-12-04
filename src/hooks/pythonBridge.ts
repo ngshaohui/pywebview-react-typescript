@@ -28,16 +28,6 @@ export function usePythonState<T>(propName: string) {
   return propValue;
 }
 
-export async function usePythonApiSimple<T>(
-  apiName: string,
-  ...rest: any[]
-): Promise<T> {
-  if (!window.pywebview.api.hasOwnProperty(apiName)) {
-    throw new ReferenceError(`pywebview has no attribute ${apiName}`);
-  }
-  return window.pywebview.api[apiName]<T>(...rest);
-}
-
 // interface HookOptions {
 //   // TODO
 //   refreshInterval: number;

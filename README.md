@@ -30,7 +30,15 @@ This will generally be the command to run during development.
 
 ### Building
 
-Has been tested to be able to build with nuitka
+Currently **only builds for windows** until I have time to test on other platforms.
+
+If necessary, use the `build` and `clean` scripts (and other build files) from the original boilerplate for other platforms.
+
+```bash
+npm run build # this builds with pyinstaller
+```
+
+Has also been tested to be able to build with nuitka
 
 ```bash
 uv run nuitka --standalone src/index.py

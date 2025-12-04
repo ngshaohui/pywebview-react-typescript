@@ -38,15 +38,15 @@ export async function usePythonApiSimple<T>(
   return window.pywebview.api[apiName]<T>(...rest);
 }
 
-interface HookOptions {
-  // TODO
-  refreshInterval: number;
-}
+// interface HookOptions {
+//   // TODO
+//   refreshInterval: number;
+// }
 
 export function usePythonApi<T>(
   apiName: string,
   apiArgs: any[],
-  options?: HookOptions
+  // options?: HookOptions
 ) {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);

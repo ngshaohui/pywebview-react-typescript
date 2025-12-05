@@ -38,10 +38,12 @@ If necessary, use the `build` and `clean` scripts (and other build files) from t
 npm run build # this builds with pyinstaller
 ```
 
-Has also been tested to be able to build with nuitka
+## Pimped `src/hooks/pythonBridge.ts`
 
-```bash
-uv run nuitka --standalone src/index.py
-```
+The original `pythonBridge.js` has been improved with typing, error handling, as well as unregistering event listeners on unmount to prevent leakage.
 
-Not yet able to use `--onefile` flag as it will raise an exception `Exception: No index.html found`
+`usePythonState` now subscribes to a specific `propName`.
+
+`usePythonApi` has been made to resemble the `useSWR` library, though a lot more functionality is needed to provide configurable options. As it is, it's sufficient in handling basic API calls and error handling.
+
+Also added `usePlatform` and `useWebviewToken` though they haven't been extensively tested.

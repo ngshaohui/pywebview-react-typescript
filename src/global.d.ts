@@ -1,6 +1,6 @@
 declare global {
   interface Window {
-    pywebview: {
+    pywebview?: {
       api: { [index: string]: <T = any>(...args: any[]) => Promise<T> };
       platform: string;
       token: string;

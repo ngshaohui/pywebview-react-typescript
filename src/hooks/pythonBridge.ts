@@ -4,11 +4,48 @@ interface PywebviewEvent<T> {
   detail: { key: string; value: T };
 }
 
+export function usePlatform() {
+  const [platform, setPlatform] = useState<string | null>(null);
+
+  function handlePywebviewReady() {
+    setPlatform(window.pywebview!.platform);
+  }
+
+  useEffect(() => {
+    if (window.pywebview) {
+      handlePywebviewReady();
+    } else {
+      window.addEventListener("pywebviewready", handlePywebviewReady);
+    }
+  }, []);
+
+  return platform;
+}
+
+export function useWebviewToken() {
+  const [token, setToken] = useState<string | null>(null);
+
+  function handlePywebviewReady() {
+    setToken(window.pywebview!.token);
+  }
+
+  useEffect(() => {
+    if (window.pywebview) {
+      handlePywebviewReady();
+    } else {
+      window.addEventListener("pywebviewready", handlePywebviewReady);
+    }
+  }, []);
+
+  return token;
+}
+
 export function usePythonState<T>(propName: string) {
-  const [propValue, setPropValue] = useState<T>();
+  const [propValue, setPropValue] = useState<T | null>(null);
 
   function subscribeToState() {
-    window.pywebview.state.addEventListener("change", function (event) {
+    // TODO: docs also state that there can be the "delete" event
+    window.pywebview!.state.addEventListener("change", function (event) {
       const ev = event as CustomEvent<PywebviewEvent<T>["detail"]>;
       // filter out events that do not belong
       if (ev.detail.key === propName) {
@@ -35,7 +72,7 @@ export function usePythonState<T>(propName: string) {
 
 export function usePythonApi<T>(
   apiName: string,
-  apiArgs: any[],
+  apiArgs: any[]
   // options?: HookOptions
 ) {
   const [data, setData] = useState<T | null>(null);
@@ -47,10 +84,10 @@ export function usePythonApi<T>(
       return;
     }
     setIsLoading(true);
-    if (!window.pywebview.api.hasOwnProperty(apiName)) {
+    if (!window.pywebview!.api.hasOwnProperty(apiName)) {
       setError(new ReferenceError(`${apiName} is not available`));
     } else {
-      const res = await window.pywebview.api[apiName]<T>(...apiArgs);
+      const res = await window.pywebview!.api[apiName]<T>(...apiArgs);
       setData(res);
     }
 

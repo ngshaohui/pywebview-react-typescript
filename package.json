@@ -17,7 +17,7 @@
     "build": "npm run clean && npm run frontend:prod && npm run build:py",
     "build-n": "npm run clean && npm run frontend:prod && npm run build-n:py",
     "build:py": "uv run pyinstaller build-windows.spec",
-    "build-n:py": "uv run nuitka --standalone --user-package-configuration-file=pywebview-react.nuitka-package.config.yml src/index.py"
+    "build-n:py": "uv run nuitka --onefile src/index.py"
   },
   "dependencies": {
     "react": "^19.2.0",

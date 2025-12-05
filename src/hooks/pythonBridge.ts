@@ -7,9 +7,9 @@ interface PywebviewEvent<T> {
 export function usePlatform() {
   const [platform, setPlatform] = useState<string | null>(null);
 
-  function handlePywebviewReady() {
+  const handlePywebviewReady = useCallback(() => {
     setPlatform(window.pywebview!.platform);
-  }
+  }, []);
 
   useEffect(() => {
     if (window.pywebview) {
@@ -17,6 +17,10 @@ export function usePlatform() {
     } else {
       window.addEventListener("pywebviewready", handlePywebviewReady);
     }
+
+    return () => {
+      window.removeEventListener("pywebviewready", handlePywebviewReady);
+    };
   }, []);
 
   return platform;
@@ -25,9 +29,9 @@ export function usePlatform() {
 export function useWebviewToken() {
   const [token, setToken] = useState<string | null>(null);
 
-  function handlePywebviewReady() {
+  const handlePywebviewReady = useCallback(() => {
     setToken(window.pywebview!.token);
-  }
+  }, []);
 
   useEffect(() => {
     if (window.pywebview) {
@@ -35,6 +39,10 @@ export function useWebviewToken() {
     } else {
       window.addEventListener("pywebviewready", handlePywebviewReady);
     }
+
+    return () => {
+      window.removeEventListener("pywebviewready", handlePywebviewReady);
+    };
   }, []);
 
   return token;
@@ -43,16 +51,21 @@ export function useWebviewToken() {
 export function usePythonState<T>(propName: string) {
   const [propValue, setPropValue] = useState<T | null>(null);
 
-  function subscribeToState() {
-    // TODO: docs also state that there can be the "delete" event
-    window.pywebview!.state.addEventListener("change", function (event) {
-      const ev = event as CustomEvent<PywebviewEvent<T>["detail"]>;
+  const handleChangeEvent = useCallback(
+    (evt: Event) => {
+      const ev = evt as CustomEvent<PywebviewEvent<T>["detail"]>;
       // filter out events that do not belong
       if (ev.detail.key === propName) {
         setPropValue(ev.detail.value);
       }
-    });
-  }
+    },
+    [propName]
+  );
+
+  const subscribeToState = useCallback(() => {
+    // TODO: docs also state that there can be the "delete" event
+    window.pywebview!.state.addEventListener("change", handleChangeEvent);
+  }, [handleChangeEvent]);
 
   useEffect(() => {
     if (window.pywebview) {
@@ -60,7 +73,14 @@ export function usePythonState<T>(propName: string) {
     } else {
       window.addEventListener("pywebviewready", subscribeToState);
     }
-  }, []);
+
+    return () => {
+      if (window.pywebview) {
+        window.pywebview.state.removeEventListener("change", handleChangeEvent);
+        window.removeEventListener("pywebviewready", subscribeToState);
+      }
+    };
+  }, [subscribeToState, handleChangeEvent]);
 
   return propValue;
 }
@@ -78,30 +98,40 @@ export function usePythonApi<T>(
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  /*
+   * hack for tracking dependencies
+   * this means only primitives should be passed
+   */
+  const strArgs = JSON.stringify(apiArgs); //
 
   const fetchData = useCallback(async () => {
-    if (apiName === undefined) {
-      return;
+    const args = JSON.parse(strArgs);
+    try {
+      setIsLoading(true);
+      if (!window.pywebview!.api.hasOwnProperty(apiName)) {
+        setError(new ReferenceError(`${apiName} is not available`));
+      } else {
+        const res = await window.pywebview!.api[apiName]<T>(...args);
+        setData(res);
+      }
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(true);
-    if (!window.pywebview!.api.hasOwnProperty(apiName)) {
-      setError(new ReferenceError(`${apiName} is not available`));
-    } else {
-      const res = await window.pywebview!.api[apiName]<T>(...apiArgs);
-      setData(res);
-    }
-
-    setIsLoading(false);
-  }, []);
+  }, [apiName, strArgs]);
 
   useEffect(() => {
-    // TODO: consider whether it's appropriate to add isLoading here
     if (window.pywebview) {
       fetchData();
     } else {
       window.addEventListener("pywebviewready", fetchData);
     }
-  }, []);
+
+    return () => {
+      window.removeEventListener("pywebviewready", fetchData);
+    };
+  }, [fetchData]);
 
   const mutate = useCallback(async () => {
     // similar to bound mutate in useSWR... eventually, hopefully

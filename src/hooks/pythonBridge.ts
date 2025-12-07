@@ -91,10 +91,12 @@ export function usePythonState<T>(propName: string) {
 // }
 
 export function usePythonApi<T>(
-  apiName: string,
+  apiName: string | null,
   apiArgs: any[]
   // options?: HookOptions
 ) {
+  const [name, setName] = useState(apiName);
+  const [args, setArgs] = useState(apiArgs);
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -105,13 +107,15 @@ export function usePythonApi<T>(
   const strArgs = JSON.stringify(apiArgs); //
 
   const fetchData = useCallback(async () => {
-    const args = JSON.parse(strArgs);
+    if (name === null) {
+      return;
+    }
     try {
       setIsLoading(true);
-      if (!window.pywebview!.api.hasOwnProperty(apiName)) {
-        setError(new ReferenceError(`${apiName} is not available`));
+      if (!window.pywebview!.api.hasOwnProperty(name)) {
+        setError(new ReferenceError(`${name} is not available`));
       } else {
-        const res = await window.pywebview!.api[apiName]<T>(...args);
+        const res = await window.pywebview!.api[name]<T>(...args);
         setData(res);
       }
     } catch (err) {
@@ -119,7 +123,7 @@ export function usePythonApi<T>(
     } finally {
       setIsLoading(false);
     }
-  }, [apiName, strArgs]);
+  }, [name, strArgs]);
 
   useEffect(() => {
     if (window.pywebview) {
@@ -133,10 +137,19 @@ export function usePythonApi<T>(
     };
   }, [fetchData]);
 
-  const mutate = useCallback(async () => {
-    // similar to bound mutate in useSWR... eventually, hopefully
-    return await fetchData();
-  }, [fetchData]);
+  const mutate = useCallback(
+    async (newName?: string, newArgs?: any[]) => {
+      // similar to bound mutate in useSWR... eventually, hopefully
+      if (newName !== undefined) {
+        setName(newName);
+      }
+      if (newArgs !== undefined) {
+        setArgs(newArgs);
+      }
+      return await fetchData();
+    },
+    [fetchData]
+  );
 
   return { data, error, isLoading, mutate };
 }

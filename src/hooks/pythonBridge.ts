@@ -95,16 +95,17 @@ export function usePythonApi<T>(
   apiArgs: any[]
   // options?: HookOptions
 ) {
-  const [name, setName] = useState(apiName);
-  const [args, setArgs] = useState(apiArgs);
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  const [name, setName] = useState(apiName);
+  const [args, setArgs] = useState(apiArgs);
   /*
    * hack for tracking dependencies
    * this means only primitives should be passed
    */
-  const strArgs = JSON.stringify(apiArgs); //
+  const strArgs = JSON.stringify(args); //
 
   const fetchData = useCallback(async () => {
     if (name === null) {

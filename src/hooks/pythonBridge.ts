@@ -104,8 +104,9 @@ export function usePythonApi<T>(
   /*
    * hack for tracking dependencies
    * this means only primitives should be passed
+   * when apiName is set to null, args will be ignored
    */
-  const strArgs = JSON.stringify(args); //
+  const strArgs = name === null ? "" : JSON.stringify(args);
 
   const fetchData = useCallback(async () => {
     if (name === null) {

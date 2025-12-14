@@ -155,3 +155,39 @@ export function usePythonApi<T>(
 
   return { data, error, isLoading, mutate };
 }
+
+export function usePythonApiMutation<T>(apiName: string | null) {
+  const [data, setData] = useState<T | null>(null);
+  const [isMutating, setIsMutating] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const trigger = useCallback(
+    async (apiArgs: any[]) => {
+      if (apiName === null) {
+        return;
+      }
+      try {
+        setIsMutating(true);
+        if (!window.pywebview!.api.hasOwnProperty(apiName)) {
+          setError(new ReferenceError(`${apiName} is not available`));
+        } else {
+          const res = await window.pywebview!.api[apiName]<T>(...apiArgs);
+          setData(res);
+        }
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setIsMutating(false);
+      }
+    },
+    [apiName]
+  );
+
+  const reset = useCallback(() => {
+    setData(null);
+    setError(null);
+    setIsMutating(false);
+  }, []);
+
+  return { data, error, isMutating, trigger, reset };
+}

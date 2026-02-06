@@ -5,10 +5,12 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "pygobject>=3.50.0; sys_platform == 'linux'",
     "pywebview>=6.1",
 ]
 
 [dependency-groups]
 dev = [
+    "pygobject-stubs>=2.16.0; sys_platform == 'linux'",
     "pyinstaller>=6.17.0",
 ]
